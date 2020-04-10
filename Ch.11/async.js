@@ -1,4 +1,4 @@
-let {bigOak, defineRequestType} = require("./crow-tech")
+let {bigOak, defineRequestType, everywhere} = require("./crow-tech")
 
 // defineRequestType("note", (nest, content, source, done) => {
 //   console.log(`${nest.name} received note: ${content}`);
@@ -61,3 +61,23 @@ function availableNeighbors(nest) {
     return nest.neighbors.filter((_, i) => result[i]);
   });
 }
+
+everywhere(nest => {
+  nest.state.gossip = [];
+});
+
+function sendGossip(nest, message, exceptFor = null) {
+  nest.state.gossip.push(message);
+  for (let neighbor of nest.neighbors) {
+    if (neighbor == exceptFor) continue;
+    request(nest, neighbor, "gossip", message);
+  }
+}
+
+requestType("gossip", (nest, message, source) => {
+  if (nest.state.gossip.includes(message)) return;
+  console.log(`${nest.name} received gossip '${message}' from ${source}`);
+  sendGossip(nest, message, source);
+});
+
+console.log(bigOak.state.connections);
