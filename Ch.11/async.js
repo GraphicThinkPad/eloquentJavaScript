@@ -1,4 +1,4 @@
-let {bigOak, defineRequestType, everywhere} = require("./crow-tech")
+let {bigOak, cowPasture, defineRequestType, everywhere} = require("./crow-tech")
 
 // defineRequestType("note", (nest, content, source, done) => {
 //   console.log(`${nest.name} received note: ${content}`);
@@ -17,7 +17,7 @@ function request(nest, target, type, content) {
   return new Promise((resolve, reject) => {
     let done = false;
     function attempt(n) {
-      nest.send(target, send, content, (failed, value) => {
+      nest.send(target, type, content, (failed, value) => {
         done = true;
         if (failed) reject(failed);
         else resolve(value);
@@ -55,11 +55,15 @@ requestType("ping", () => "pong");
 function availableNeighbors(nest) {
   let requests = nest.neighbors.map(neighbor => {
     return request(nest, neighbor, "ping")
-      .then(() => true, () => false);
+      .then(() => ( {neighbor, success: true} ), () => ({neighbor, success: false}));
   });
+  // Michael suggested this syntax
   return Promise.all(requests).then(result => {
-    return nest.neighbors.filter((_, i) => result[i]);
+    return result.filter(item => item.success).map(i => i.neighbor);
   });
+  // then(result => {
+  //   return nest.neighbors.filter((_, i) => result[i]);
+  // });
 }
 
 everywhere(nest => {
@@ -79,5 +83,3 @@ requestType("gossip", (nest, message, source) => {
   console.log(`${nest.name} received gossip '${message}' from ${source}`);
   sendGossip(nest, message, source);
 });
-
-console.log(bigOak.state.connections);
