@@ -1,4 +1,4 @@
-let {bigOak, cowPasture, defineRequestType, everywhere} = require("./crow-tech")
+let {bigOak, cowPasture, everywhere, defineRequestType} = require("./crow-tech")
 
 // defineRequestType("note", (nest, content, source, done) => {
 //   console.log(`${nest.name} received note: ${content}`);
@@ -137,7 +137,7 @@ requestType("route", (nest, {target, type, content}) => {
 
 requestType("storage", (nest, name) => storage(nest, name));
 
-function findInStorage(next, name) {
+function findInStorage(nest, name) {
   return storage(nest, name).then(found => {
     if (found != null) return found;
     else return findInRemoteStorage(nest, name);
@@ -148,17 +148,41 @@ function network(nest) {
   return Array.from(nest.state.connections.keys());
 }
 
-function findInRemoteStorage(nest, name) {
-  let sources = network(nest).filter(n => n != nest.name);
-  function next() {
-    if (sources.length == 0) {
-      return Promise.reject(new Error("Not Found"));
-    } else {
-      let source = sources[Math.floor(Math.random() * sources.length)];
-      sources = sources.filter(n => n != source);
-      return routeRequest(nest, source, "storage", name)
-        .then(value => value != null ? value : next(), next);
-    }
+async function findInStorage(nest, name) {
+  let local = await storage(nest, name);
+  if (local != null) return local;
+  let sources = network(nest).filter(n => n!= nest.name);
+  while (sources.length > 0) {
+    let source = sources[Math.floor(Math.random() * sources.length)];
+    sources = sources.filter(n => n!= source);
+    try {
+      let found = await routeRequest(nest, source, "storage", name);
+      if (found != null) return found;
+    } catch(_) {}
   }
-  return next();
+  throw new Error("Not found");
+}
+
+function* powers(n) {
+  for (let current = n;; current *= n) {
+    yield current;
+  }
+}
+
+for (let power of powers(3)) {
+  if (power > 50) break;
+  // console.log(power);
+}
+
+function anyStorage(nest, source, name) {
+  if (source == nest.name) return storage(nest, name);
+  else return routeRequest(nest, source, "storage", name);
+};
+
+async function chicks(nest, year) {
+  let lines = network(nest).map(async name => {
+    return name + ": " +
+      await anyStorage(nest, name, `chicks in ${year}`);
+  });
+  return (await Promise.all(lines)).join("\n");
 }

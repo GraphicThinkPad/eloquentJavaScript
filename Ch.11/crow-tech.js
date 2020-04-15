@@ -103,7 +103,6 @@
 
   let network = new Network(connections, storageFor)
   exports.bigOak = network.nodes["Big Oak"]
-  exports.cowPasture = network.nodes["Cow Pasture"]
   exports.everywhere = network.everywhere.bind(network)
   exports.defineRequestType = network.defineRequestType.bind(network)
 
