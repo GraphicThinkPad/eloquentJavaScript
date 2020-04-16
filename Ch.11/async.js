@@ -1,9 +1,4 @@
-let {bigOak, cowPasture, everywhere, defineRequestType} = require("./crow-tech")
-
-// defineRequestType("note", (nest, content, source, done) => {
-//   console.log(`${nest.name} received note: ${content}`);
-//   done();
-// });
+let {bigOak, everywhere, defineRequestType} = require("./crow-tech")
 
 function storage(nest, name) {
   return new Promise((resolve) => {
@@ -186,3 +181,34 @@ async function chicks(nest, year) {
   });
   return (await Promise.all(lines)).join("\n");
 }
+
+// routeRequest(bigOak, "Chateau", "storage", "scalpel").then(console.log)
+
+async function locateScalpel(nest) {
+  for (let singleNest of network(nest)) {
+    // console.log(single)
+    // console.log(`${singleNest} says the scalpel is at ${await anyStorage(nest, singleNest, "scalpel")}`);
+    if (singleNest == await anyStorage(nest, singleNest, "scalpel")) {
+      return singleNest;
+    } 
+  }
+  throw new Error("Couldn't find scalpel");
+}
+
+function locateScalpel2(nest) {
+  return new Promise((resolve, reject) => {
+    for (let singleNest of network(nest)) {
+      // From this, I can tell that anyStorage isn't resolved when the comparison
+      // is being made.
+     anyStorage(nest, singleNest, "scalpel").then(console.log);
+     // This mistakenly shows "BIg Oak" as the nest with the scalpel. Will need
+     // to dig into why.
+     if (anyStorage(nest, singleNest, "scalpel").then(n => n == singleNest)) {
+      resolve(singleNest)
+     }
+    }
+    reject("Couldn't locate the scalpel");
+  });
+}
+
+locateScalpel2(bigOak).then(console.log).catch(e => console.log(e));
