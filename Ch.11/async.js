@@ -196,19 +196,16 @@ async function locateScalpel(nest) {
 }
 
 function locateScalpel2(nest) {
-  return new Promise((resolve, reject) => {
-    for (let singleNest of network(nest)) {
-      // From this, I can tell that anyStorage isn't resolved when the comparison
-      // is being made.
-     anyStorage(nest, singleNest, "scalpel").then(console.log);
-     // This mistakenly shows "BIg Oak" as the nest with the scalpel. Will need
-     // to dig into why.
-     if (anyStorage(nest, singleNest, "scalpel").then(n => n == singleNest)) {
-      resolve(singleNest)
-     }
-    }
-    reject("Couldn't locate the scalpel");
-  });
+  function loop(current) {
+    return anyStorage(nest, current, "scalpel").then(next => {
+      if (next == current) return current;
+      else return loop(next);
+    })
+  }
+  return loop(nest.name);
 }
 
+
 locateScalpel2(bigOak).then(console.log).catch(e => console.log(e));
+
+
