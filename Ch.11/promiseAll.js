@@ -5,15 +5,13 @@ function Promise_all(promises) {
     let counter = promises.length;
     if (promises.length == 0) resolve(promises);
     promises.map((promise, i) => {
-      try {
       promise.then((result) => {
         results[i] = result;
         // console.log({ results });
         counter--;
         // console.log(`Promises left: ${counter}`);
-        if (counter == 0) resolve(results);
-      })}
-      catch(e) {reject(e)};
+        if (counter == 0) resolve(results)
+      }).catch(e => reject(e));
     })
   });
 }
