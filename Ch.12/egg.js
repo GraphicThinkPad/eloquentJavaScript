@@ -90,9 +90,69 @@ specialForms.if = (args, scope) => {
   }
 };
 
+specialForms.while = (args, scope) => {
+  if (args.length != 2) {
+    throw new SyntaxError("Wrong number of args to while");
+  }
+  while (evaluate(args[0], scope) !== false) {
+    evaluate(args[1], scope);
+  }
+  // Return false for lack of a meaningful result if while begins as false
+  return false;
+};
+
+specialForms.do = (args, scope) => {
+  let value = false;
+  for (let arg of args) {
+    value = evaluate(arg, scope);
+  }
+  return value;
+}
+
+specialForms.define = (args, scope) => {
+  if (args.length != 2 || args[0].type != "word") {
+    throw new SyntaxError("Incorrect use of define");
+  }
+  let value = evaluate(args[1], scope);
+  scope[args[0].name] = value;
+  return value;
+};
+
+const topScope = Object.create(null);
+
+topScope.true = true;
+topScope.false = false;
+
+for (let op of ["+", "-", "*", "/", "==", "<", ">"]) {
+  topScope[op] = Function("a, b", `return a ${op} b;`);
+}
+
+topScope.print = (value) => {
+  console.log(value);
+  return value;
+}
+
+function run(program) {
+  return evaluate(parse(program), Object.create(topScope));
+}
+
 // Making sure it all looks okay
 // console.log(JSON.stringify(parse(`do(define(x, 10),
 //    if(>(x, 5),
 //       print("large"),
 //       print("small")))` ), null, 2)); 
+
+// run(`
+// do(
+//   define(total, 0),
+//   define(count, 1),
+//   while( <(count, 11),
+//     do(
+//       define(total, +(total, count)),
+//       define(count, +(count, 1)),
+//     ) ),
+//     print(total)
+// )
+// `);
+// // -> 55
 
