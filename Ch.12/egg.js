@@ -14,10 +14,12 @@ function parseExpression(program) {
   return parseApply(expr, program.slice(match[0].length));
 }
 
+// Note: This has been changed to skip comments as well
 function skipSpace(string) {
-  let first = string.search(/\S/);
-  if (first == -1) return "";
-  return string.slice(first);
+  let regEx = /(\s*|#.*\n)*/
+  let match = regEx.exec(string);
+  if (match == null) return string
+  return string.slice(match[0].length);
 }
 
 // "expr" is the matched expression, and "program" is the remainder of the program
@@ -193,3 +195,4 @@ specialForms.fun = (args, scope) => {
 exports.specialForms = specialForms;
 exports.run = run;
 exports.topScope = topScope;
+exports.parse = parse;
