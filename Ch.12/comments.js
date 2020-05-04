@@ -4,7 +4,6 @@ const {specialForms, parse, run, topScope} = require("./egg");
 function skipSpaceOrComments(string) {
   let regEx = /(\s*|#.*\n)*/
   let matched = regEx.exec(string);
-  if (matched == null) return string
   return string.slice(matched[0].length);
 }
 

@@ -163,15 +163,6 @@ specialForms.fun = (args, scope) => {
   };
 };
 
-// This doesn't work and I'm not sure why.
-// run(`
-// do(define(pow, fun(base, exp,
-//      if(==(exp, 0),
-//         1,
-//         *(base, pow(base, -(exp, 1)))))),
-//    print(pow(2, 10)))
-// `);
-
 // Making sure it all looks okay
 // console.log(JSON.stringify(parse(`do(define(x, 10),
 //    if(>(x, 5),
@@ -196,3 +187,4 @@ exports.specialForms = specialForms;
 exports.run = run;
 exports.topScope = topScope;
 exports.parse = parse;
+exports.evaluate = evaluate;
